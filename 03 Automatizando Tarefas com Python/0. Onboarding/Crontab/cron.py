@@ -1,6 +1,6 @@
 import os
 
-types = ['jpeg']
+types = ['exe']
 
 # Usa 'Documents', não 'Documentos'
 base_path = os.path.expanduser('~')

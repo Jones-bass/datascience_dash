@@ -5,7 +5,7 @@ import os
 import mimetypes
 
 # --- Caminhos base ---
-base_dir = r'D:\Search\dashboard_python\03 Automatizando Tarefas com Python\0. Onboarding\E-mail'
+base_dir = r'D:\Search\dashboard_python\03_Automatizando Tarefas com Python\Onboarding\E-mail'
 caminho_token = os.path.join(base_dir, 'passwords', 'token')
 caminho_corpo = os.path.join(base_dir, 'corpo_email.txt')
 caminho_imagem = os.path.join(base_dir, 'imagem.jpg')

@@ -4,7 +4,7 @@ import os
 # Parâmetros
 reduct_fact = 0.5          # fator de redução (0.5 = 50%)
 quality = 95               # qualidade JPEG de saída (0-100)
-base_dir = r'D:\Search\dashboard_python\03_Automatizando Tarefas com Python\Onboarding\Edição_imagens'
+base_dir = r'D:\Search\dashboard_python\03_Automatizando Tarefas com Python\Onboarding\Edição_imagens\compressao'
 files_path = os.path.join(base_dir, 'fotos')
 compressed_path = os.path.join(base_dir, 'compressed_images')
 

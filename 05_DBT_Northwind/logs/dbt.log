@@ -1,0 +1,30 @@
+[0m00:53:42.932182 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000184BCB7BE00>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000184BA90C910>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000184BD97F4D0>]}
+
+
+============================== 00:53:43.112920 | 4a1653db-ca97-4686-bcef-1135bd907e09 ==============================
+[0m00:53:43.112920 [info ] [MainThread]: Running with dbt=1.11.8
+[0m00:53:43.114685 [debug] [MainThread]: running dbt with arguments {'static_parser': 'True', 'no_print': 'None', 'version_check': 'True', 'target_path': 'None', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'printer_width': '80', 'write_json': 'True', 'introspect': 'True', 'log_cache_events': 'False', 'empty': 'None', 'cache_selected_only': 'False', 'log_format': 'default', 'debug': 'False', 'fail_fast': 'False', 'partial_parse': 'True', 'send_anonymous_usage_stats': 'True', 'quiet': 'False', 'warn_error': 'None', 'profiles_dir': 'C:\\Users\\Jones_2\\.dbt', 'invocation_command': 'dbt init', 'use_colors': 'True', 'indirect_selection': 'eager', 'use_experimental_parser': 'False', 'log_path': 'logs'}
+[0m00:53:50.039559 [error] [MainThread]: Encountered an error:
+
+[0m00:53:50.042129 [error] [MainThread]: Traceback (most recent call last):
+  File "C:\Users\Jones_2\Documents\Search\datascience_dash\05_DBT_Northwind\venv\Lib\site-packages\dbt\cli\requires.py", line 182, in wrapper
+    result, success = func(*args, **kwargs)
+                      ~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Jones_2\Documents\Search\datascience_dash\05_DBT_Northwind\venv\Lib\site-packages\dbt\cli\requires.py", line 128, in wrapper
+    return func(*args, **kwargs)
+  File "C:\Users\Jones_2\Documents\Search\datascience_dash\05_DBT_Northwind\venv\Lib\site-packages\dbt\cli\main.py", line 488, in init
+    results = task.run()
+  File "C:\Users\Jones_2\Documents\Search\datascience_dash\05_DBT_Northwind\venv\Lib\site-packages\dbt\task\init.py", line 324, in run
+    project_name = self.get_valid_project_name()
+  File "C:\Users\Jones_2\Documents\Search\datascience_dash\05_DBT_Northwind\venv\Lib\site-packages\dbt\task\init.py", line 278, in get_valid_project_name
+    name = click.prompt("Enter a name for your project (letters, digits, underscore)")
+  File "C:\Users\Jones_2\Documents\Search\datascience_dash\05_DBT_Northwind\venv\Lib\site-packages\click\termui.py", line 179, in prompt
+    value = prompt_func(prompt)
+  File "C:\Users\Jones_2\Documents\Search\datascience_dash\05_DBT_Northwind\venv\Lib\site-packages\click\termui.py", line 162, in prompt_func
+    raise Abort() from None
+click.exceptions.Abort
+
+[0m00:53:50.043180 [debug] [MainThread]: Command `dbt init` failed at 00:53:50.043040 after 7.29 seconds
+[0m00:53:50.043478 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000184BF0E2650>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000184BF15CCB0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000184BF1246B0>]}
+[0m00:53:50.043779 [debug] [MainThread]: Flushing usage events
+[0m00:53:50.863229 [debug] [MainThread]: An error was encountered while trying to flush usage events

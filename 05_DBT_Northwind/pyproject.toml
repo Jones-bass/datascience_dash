@@ -1,0 +1,16 @@
+[project]
+name = "05-dbt-northwind"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "jones-bass",email = "jonesdev.tb@gmail.com"}
+]
+requires-python = ">=3.13"
+dependencies = [
+    "dbt-postgres (>=1.10.0,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

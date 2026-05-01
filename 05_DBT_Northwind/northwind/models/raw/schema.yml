@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: raw_brazil
+    description: "Model que seleciona todos os dados da tabela brazil."
+    columns:
+      - name: id
+        description: "Identificador do registro."

@@ -1,0 +1,24 @@
+[project]
+name = "06-dtb-bigquery"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "jones-bass",email = "jonesdev.tb@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "dbt-core (>=1.11.8,<2.0.0)",
+    "dbt-bigquery (>=1.11.1,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pre-commit (>=4.6.0,<5.0.0)",
+    "sqlfluff (>=4.1.0,<5.0.0)"
+]

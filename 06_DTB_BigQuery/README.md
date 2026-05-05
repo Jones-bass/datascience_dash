@@ -720,3 +720,310 @@ Errors:
 A configuração de `freshness` no dbt é uma ferramenta poderosa para garantir que seus dados estejam atualizados, emitindo avisos e erros quando os dados excedem os limites definidos. Isso ajuda a manter a integridade das suas análises e a confiança nos seus dados.
 
 
+
+## Macros
+
+Macros são uma funcionalidade poderosa do dbt (data build tool) que permitem a reutilização de código SQL e a personalização dinâmica de comportamentos em seus modelos de dados. Eles são escritos em Jinja, uma linguagem de template para Python, e permitem a criação de trechos de código reutilizáveis que podem ser chamados em qualquer lugar do seu projeto dbt.
+
+### O que é um Macro?
+
+Um macro no dbt é uma função definida pelo usuário que pode ser utilizada para gerar ou manipular SQL de maneira programática. Eles são especialmente úteis para evitar duplicação de código, aplicar transformações consistentes e implementar lógica condicional nos seus scripts SQL.
+
+### Benefícios dos Macros
+
+1. **Reutilização de Código**: Macros permitem encapsular lógica comum em uma única definição reutilizável, reduzindo a repetição de código.
+2. **Manutenção Simplificada**: Alterações na lógica centralizada dentro de um macro são refletidas em todos os lugares onde o macro é utilizado, facilitando a manutenção.
+3. **Customização e Flexibilidade**: Macros podem usar parâmetros para gerar SQL dinamicamente, adaptando-se às necessidades específicas de diferentes modelos ou situações.
+4. **Padronização**: Garantem que operações comuns, como formatação de datas ou tratamento de valores nulos, sejam realizadas de maneira consistente em todo o projeto.
+
+### Exemplo de Uso de Macro
+
+Um exemplo clássico de uso de macro no dbt é a conversão de valores em centavos para dólares de forma consistente em diferentes modelos e bancos de dados. O macro `cents_to_dollars` mostrado anteriormente é um exemplo prático de como isso pode ser implementado:
+
+```jinja
+{% macro cents_to_dollars(column_name) %}
+    round(cast(({{ column_name }} / 100) as numeric), 2)
+{% endmacro %}
+```
+
+Este macro define como os valores em centavos devem ser convertidos para dólares, com implementações específicas para PostgreSQL e BigQuery.
+
+### Uso em um Modelo
+
+Você pode chamar este macro dentro de um modelo dbt da seguinte forma:
+
+```sql
+select
+    {{ cents_to_dollars('amount_in_cents') }} as amount_in_dollars
+from
+    {{ ref('transactions') }}
+```
+
+Neste exemplo, a coluna `amount_in_cents` será convertida para `amount_in_dollars` usando a lógica definida no macro `cents_to_dollars`.
+
+### Conclusão
+
+Macros são uma parte essencial do dbt, permitindo a criação de código SQL eficiente, reutilizável e fácil de manter. Eles ajudam a padronizar transformações de dados e a implementar lógica complexa de maneira simplificada, contribuindo para a qualidade e consistência dos seus pipelines de dados.
+
+## Refatorando dolar e schema
+
+## Teste unitário
+
+Os testes unitários no dbt são utilizados para verificar a precisão e a integridade das transformações de dados. Eles permitem validar que as transformações SQL aplicadas aos dados produzem os resultados esperados, garantindo que a lógica de negócio implementada está correta.
+
+### Estrutura de Teste Unitário no dbt
+
+Vamos analisar a estrutura do exemplo fornecido:
+
+```yaml
+unit_tests:
+  - name: test_supply_costs_sum_correctly
+    description: "Test that the counts of drinks and food orders convert to booleans properly."
+    model: order_items
+    given:
+      - input: ref('stg_supplies')
+        rows:
+          - { product_id: 1, supply_cost: 4.50 }
+          - { product_id: 2, supply_cost: 3.50 }
+          - { product_id: 2, supply_cost: 5.00 }
+      - input: ref('stg_products')
+        rows:
+          - { product_id: 1 }
+          - { product_id: 2 }
+      - input: ref('stg_order_items')
+        rows:
+          - { order_id: 1, product_id: 1 }
+          - { order_id: 2, product_id: 2 }
+          - { order_id: 2, product_id: 2 }
+      - input: ref('stg_orders')
+        rows:
+          - { order_id: 1 }
+          - { order_id: 2 }
+    expect:
+      rows:
+        - { order_id: 1, product_id: 1, supply_cost: 4.50 }
+        - { order_id: 2, product_id: 2, supply_cost: 8.50 }
+        - { order_id: 2, product_id: 2, supply_cost: 8.50 }
+```
+
+### Componentes do Teste Unitário
+
+1. **name**: Nome do teste unitário.
+2. **description**: Descrição do objetivo do teste.
+3. **model**: O modelo que está sendo testado.
+4. **given**: As tabelas de entrada e as linhas de dados que são fornecidas para o teste.
+    - **input**: Refere-se às tabelas ou modelos que serão utilizados como entrada no teste.
+    - **rows**: Linhas de dados específicas que são inseridas nas tabelas de entrada para o teste.
+5. **expect**: As linhas esperadas de saída do teste.
+    - **rows**: Linhas de dados esperadas que devem ser retornadas após a execução da lógica do modelo sendo testado.
+
+### Funcionamento do Teste Unitário
+
+1. **Preparação das Entradas (`given`)**:
+   - Define as tabelas e as linhas de dados que serão usadas como entrada.
+   - `ref('stg_supplies')`, `ref('stg_products')`, `ref('stg_order_items')`, `ref('stg_orders')` são referências às tabelas de staging.
+
+2. **Definição da Saída Esperada (`expect`)**:
+   - Define as linhas de dados que são esperadas como resultado após a aplicação da lógica do modelo.
+   - As linhas definidas em `expect` devem corresponder às saídas geradas pela transformação SQL aplicada no modelo `order_items`.
+
+### Exemplo de Transformação SQL
+
+O teste unitário validará se a lógica implementada no modelo `order_items` está somando corretamente os custos dos suprimentos associados a cada produto em cada pedido. Aqui está um exemplo hipotético da transformação SQL que poderia estar no modelo `order_items`:
+
+```sql
+-- models/order_items.sql
+
+with supplies as (
+    select product_id, sum(supply_cost) as total_supply_cost
+    from {{ ref('stg_supplies') }}
+    group by product_id
+),
+
+orders as (
+    select order_id, product_id
+    from {{ ref('stg_order_items') }}
+),
+
+order_supplies as (
+    select
+        orders.order_id,
+        orders.product_id,
+        supplies.total_supply_cost as supply_cost
+    from orders
+    join supplies on orders.product_id = supplies.product_id
+)
+
+select * from order_supplies
+```
+
+### Execução do Teste Unitário
+
+Ao rodar o teste unitário, o dbt fará o seguinte:
+
+1. Inserirá as linhas de dados fornecidas em `given` nas tabelas temporárias correspondentes.
+2. Executará a transformação SQL definida no modelo `order_items`.
+3. Comparará o resultado da transformação com as linhas esperadas definidas em `expect`.
+
+Se o resultado da transformação não corresponder ao esperado, o teste falhará, indicando que há um problema na lógica SQL ou nos dados de entrada.
+
+### Vantagens dos Testes Unitários no dbt
+
+- **Verificação de Precisão**: Garante que as transformações de dados estão corretas e que a lógica de negócio é aplicada corretamente.
+- **Manutenção**: Facilita a detecção de regressões e erros ao modificar ou adicionar novas lógicas.
+- **Documentação**: Serve como documentação viva do comportamento esperado dos modelos de dados.
+
+### Conclusão
+
+Os testes unitários no dbt são fundamentais para garantir a qualidade e a precisão das transformações de dados, ajudando a identificar e corrigir problemas antes que eles afetem os dados de produção. Com a estrutura de testes bem definida, é possível validar de forma automatizada e contínua a lógica implementada nos modelos de dados.
+
+## Resumo sobre Snapshots e SCD Type 2 no dbt
+
+#### Introdução
+
+Os snapshots no dbt são usados para capturar e armazenar as mudanças ao longo do tempo em uma tabela de origem, permitindo a implementação do SCD Type 2 (Slowly Changing Dimension Type 2). Este método é útil para manter um histórico das mudanças nos dados, crucial para análises históricas e auditorias.
+
+#### Problema que Resolve
+
+O SCD Type 2 permite:
+- Manter o histórico completo das mudanças nos dados.
+- Identificar quando as mudanças ocorreram.
+- Analisar os dados conforme estavam em diferentes pontos no tempo.
+
+#### Ordem de Execução
+
+1. **Configuração Inicial**:
+   - Criação dos seeds para carregar os dados iniciais.
+   - Configuração dos modelos de staging para transformar e limpar os dados.
+   - Configuração dos snapshots para capturar as mudanças nos dados.
+
+2. **Execução Inicial**:
+   - Carregar os dados iniciais usando seeds.
+   - Executar os snapshots para capturar o estado inicial dos dados.
+
+3. **Modificação dos Dados**:
+   - Modificar os dados na fonte (seeds).
+   - Recarregar os dados modificados.
+   - Executar os snapshots novamente para capturar as mudanças.
+
+#### Passo a Passo
+
+1. **Configuração dos Seeds**:
+
+   Crie um arquivo CSV para os dados iniciais e coloque-o na pasta `seeds`:
+
+   ```csv
+   id,name,opened_at,tax_rate
+   4b6c2304-2b9e-41e4-942a-cf11a1819378,Philadelphia,2016-09-01T00:00:00,0.06
+   40e6ddd6-b8f6-4e17-8bd6-5e53966809d2,Brooklyn,2017-03-12T00:00:00,0.04
+   1ce7ac35-d296-4e34-89c4-bf92aa2fe751,Chicago,2018-04-29T00:00:00,0.0625
+   39b38c24-679d-4217-b676-a4a0e64c8477,San Francisco,2018-05-09T00:00:00,0.075
+   09fdfbaf-3ec6-408d-93f4-1efc535d9938,New Orleans,2019-03-10T00:00:00,0.04
+   da506490-1e2f-4fe8-8426-f1eee65af28a,Los Angeles,2019-09-13T00:00:00,0.08
+   ```
+
+2. **Configuração do Modelo de Staging**:
+
+   Crie um modelo de staging para transformar e limpar os dados:
+
+   ```sql
+   -- models/staging/stg_stores.sql
+
+   with source as (
+       select * from {{ ref('raw_stores') }}
+   ),
+
+   renamed as (
+       select
+           id as location_id,
+           name as location_name,
+           tax_rate,
+           DATE_TRUNC(opened_at, day) as opened_date
+       from source
+   )
+
+   select * from renamed
+   ```
+
+3. **Configuração do Snapshot**:
+
+   Crie um snapshot para capturar as mudanças nos dados:
+
+   ```sql
+   {% snapshot stores_snapshot %}
+       {{
+           config(
+               target_schema='snapshots',
+               unique_key='location_id',
+               strategy='check',
+               check_cols=['location_name', 'tax_rate']
+           )
+       }}
+
+       select
+           location_id,
+           location_name,
+           opened_date,
+           tax_rate
+       from {{ ref('stg_stores') }}
+
+   {% endsnapshot %}
+   ```
+
+4. **Carregar os Dados Iniciais com Seeds**:
+
+   Execute o comando para carregar os dados iniciais:
+
+   ```bash
+   dbt seed
+   ```
+
+5. **Executar o Snapshot Inicial**:
+
+   Execute o comando para capturar o estado inicial dos dados:
+
+   ```bash
+   dbt snapshot
+   ```
+
+6. **Modificação dos Dados**:
+
+   Modifique o CSV para simular uma mudança de dados. Por exemplo, mude "Philadelphia" para "Philly":
+
+   ```csv
+   id,name,opened_at,tax_rate
+   4b6c2304-2b9e-41e4-942a-cf11a1819378,Philly,2016-09-01T00:00:00,0.06
+   40e6ddd6-b8f6-4e17-8bd6-5e53966809d2,Brooklyn,2017-03-12T00:00:00,0.04
+   1ce7ac35-d296-4e34-89c4-bf92aa2fe751,Chicago,2018-04-29T00:00:00,0.0625
+   39b38c24-679d-4217-b676-a4a0e64c8477,San Francisco,2018-05-09T00:00:00,0.075
+   09fdfbaf-3ec6-408d-93f4-1efc535d9938,New Orleans,2019-03-10T00:00:00,0.04
+   da506490-1e2f-4fe8-8426-f1eee65af28a,Los Angeles,2019-09-13T00:00:00,0.08
+   ```
+
+7. **Recarregar os Dados Modificados com Seeds**:
+
+   Execute o comando para carregar os dados modificados:
+
+   ```bash
+   dbt seed
+   ```
+
+8. **Executar o Snapshot Novamente**:
+
+   Execute o comando para capturar as mudanças nos dados:
+
+   ```bash
+   dbt snapshot
+   ```
+
+9. **Verificar a Tabela de Snapshots**:
+
+   Verifique a tabela de snapshots para garantir que os dados foram capturados corretamente:
+
+   ```sql
+   SELECT * FROM snapshots.stores_snapshot;
+   ```
+
+### Conclusão
+
+Seguindo esses passos, você será capaz de implementar a captura de mudanças de dados do tipo 2 (SCD Type 2) usando snapshots no dbt. Isso permitirá que você mantenha um histórico completo das mudanças nos seus dados, essencial para análises históricas e auditorias.
